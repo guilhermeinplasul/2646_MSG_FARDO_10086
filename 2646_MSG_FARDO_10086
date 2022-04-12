@@ -1,47 +1,72 @@
-declare 
-  v_empresa number := :p_1;
-  v_produto estitem.codigo%type   := :p_2;
-  v_versao  pcpversao.versao%type := :p_3;
-  v_retorno pcpficha.valor_padrao%type;
-  v_volume    number;
-  v_unidade   varchar2(10);
-  v_largura   number;
-  v_altura    number;
-  v_qtde      number;
-  v_temp      number;
-  valor_apresenta  varchar2(100);
-  valor_aplica     varchar2(100);
-  valor_emba       varchar2(100);
-  valor_peso_esp   number;
-  v_peso   number;
-  v_espessura number;
-  v_tipo_recurso number;
-  
-  
-begin 
+ DECLARE
+    v_empresa NUMBER := :p_1;
+    v_produto estitem.codigo%type   := :p_2;
+    v_versao  pcpversao.versao%type := :p_3;
+    v_retorno       pcpficha.valor_padrao%TYPE;
+    v_volume        NUMBER;
+    v_unidade       VARCHAR2(10);
+    v_largura       NUMBER;
+    v_altura        NUMBER;
+    v_qtde          NUMBER;
+    v_temp          NUMBER;
+    valor_apresenta VARCHAR2(100);
+    valor_aplica    VARCHAR2(100);
+    valor_emba      VARCHAR2(100);
+    valor_peso_esp  NUMBER;
+    v_peso          NUMBER;
+    v_espessura     NUMBER;
+    v_tipo_recurso  NUMBER;
 
-    valor_apresenta:=replace(nvl(f_busca_valor_ficha(v_empresa, v_produto, v_versao, null, 3),0),'.',',');
-    valor_aplica:=replace(nvl(f_busca_valor_ficha(v_empresa, v_produto, v_versao, null, 4),0),'.',',');
-    valor_emba:=replace(nvl(f_busca_valor_ficha(v_empresa, v_produto, v_versao, null, 7),0),'.',',');
-    v_espessura:=replace(nvl(f_busca_valor_ficha(v_empresa, v_produto, v_versao, null, 20),0),'.',',');
-    v_altura:=replace(nvl(f_busca_valor_ficha(v_empresa, v_produto, v_versao, null, 21),0),'.',',');
-    v_largura:=replace(nvl(f_busca_valor_ficha(v_empresa, v_produto, v_versao, null, 22),0),'.',',');
-    v_peso:= nvl(f_busca_valor_ficha(v_empresa, v_produto, v_versao, null, 6266),0);
-    v_qtde:= nvl(f_busca_valor_ficha(v_empresa, v_produto, v_versao, null, 58),0);
-    
-    v_temp := (v_espessura/10000000) * v_altura * v_largura * 0.95 * v_qtde;
-    
-    if valor_apresenta in ('SACO', 'FOLHA') and
-       valor_aplica not in ('RACOES')  and
-       v_peso >= 12 and 
-       valor_emba not like '%CAIXA%' then
-    
-       v_retorno:= 'PESO DO FARDO ULTRAPASSA PERMITIDO';
-       
-       else 
-         v_retorno:= '';
-    end if;
+BEGIN
+    valor_apresenta := Replace(Nvl(F_busca_valor_ficha(v_empresa, v_produto,
+                                   v_versao, NULL, 3), 0),
+                                                '.', ',');
 
-     
-   :p_4 :=	v_retorno;
-end;
+    valor_aplica := Replace(Nvl(F_busca_valor_ficha(v_empresa, v_produto,
+                                v_versao,
+                                NULL, 4), 0),
+                                    '.', ',');
+
+    valor_emba := Replace(Nvl(F_busca_valor_ficha(v_empresa, v_produto, v_versao
+                              ,
+                              NULL, 7), 0),
+                                '.', ',');
+
+    v_espessura := Replace(Nvl(F_busca_valor_ficha(v_empresa, v_produto,
+                               v_versao,
+                               NULL, 20), 0),
+                                  '.', ',');
+
+    v_altura := Replace(Nvl(F_busca_valor_ficha(v_empresa, v_produto, v_versao,
+                            NULL
+                            , 21), 0),
+                            '.', ',');
+
+    v_largura := Replace(Nvl(F_busca_valor_ficha(v_empresa, v_produto, v_versao,
+                             NULL, 22), 0),
+                              '.', ',');
+
+    v_peso := Nvl(F_busca_valor_ficha(v_empresa, v_produto, v_versao, NULL, 6266
+                  ), 0
+              );
+
+    v_qtde := Nvl(F_busca_valor_ficha(v_empresa, v_produto, v_versao, NULL, 58),
+              0);
+
+    v_temp := ( v_espessura / 10000000 ) * v_altura * v_largura * 0.95 * v_qtde;
+
+    IF valor_apresenta IN ( 'SACO', 'FOLHA' ) AND valor_aplica NOT IN ( 'RACOES' ) AND v_peso >= 12 AND valor_emba NOT LIKE '%CAIXA%' THEN
+      v_retorno := 'PESO DO FARDO ULTRAPASSA PERMITIDO';
+    
+    ELSIF valor_apresenta IN ( 'SACO', 'FOLHA' ) AND valor_aplica NOT IN ( 'RACOES' ) AND v_peso < 5 AND valor_emba NOT LIKE '%CAIXA%' THEN
+      v_retorno := 'PESO DO FARDO BAIXO. VERIFICAR AUMENTO DA QUANTIDADE.';
+      
+    ELSE
+      v_retorno := '';
+      
+    END IF;
+
+    :p_4 := v_retorno;
+    -- dbms_output.Put_line('Peso: ' || v_peso || ' / Msg: ' || v_retorno);
+    
+END;
