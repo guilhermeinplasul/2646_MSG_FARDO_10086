@@ -1,0 +1,47 @@
+declare 
+  v_empresa number := :p_1;
+  v_produto estitem.codigo%type   := :p_2;
+  v_versao  pcpversao.versao%type := :p_3;
+  v_retorno pcpficha.valor_padrao%type;
+  v_volume    number;
+  v_unidade   varchar2(10);
+  v_largura   number;
+  v_altura    number;
+  v_qtde      number;
+  v_temp      number;
+  valor_apresenta  varchar2(100);
+  valor_aplica     varchar2(100);
+  valor_emba       varchar2(100);
+  valor_peso_esp   number;
+  v_peso   number;
+  v_espessura number;
+  v_tipo_recurso number;
+  
+  
+begin 
+
+    valor_apresenta:=replace(nvl(f_busca_valor_ficha(v_empresa, v_produto, v_versao, null, 3),0),'.',',');
+    valor_aplica:=replace(nvl(f_busca_valor_ficha(v_empresa, v_produto, v_versao, null, 4),0),'.',',');
+    valor_emba:=replace(nvl(f_busca_valor_ficha(v_empresa, v_produto, v_versao, null, 7),0),'.',',');
+    v_espessura:=replace(nvl(f_busca_valor_ficha(v_empresa, v_produto, v_versao, null, 20),0),'.',',');
+    v_altura:=replace(nvl(f_busca_valor_ficha(v_empresa, v_produto, v_versao, null, 21),0),'.',',');
+    v_largura:=replace(nvl(f_busca_valor_ficha(v_empresa, v_produto, v_versao, null, 22),0),'.',',');
+    v_peso:= nvl(f_busca_valor_ficha(v_empresa, v_produto, v_versao, null, 6266),0);
+    v_qtde:= nvl(f_busca_valor_ficha(v_empresa, v_produto, v_versao, null, 58),0);
+    
+    v_temp := (v_espessura/10000000) * v_altura * v_largura * 0.95 * v_qtde;
+    
+    if valor_apresenta in ('SACO', 'FOLHA') and
+       valor_aplica not in ('RACOES')  and
+       v_peso >= 12 and 
+       valor_emba not like '%CAIXA%' then
+    
+       v_retorno:= 'PESO DO FARDO ULTRAPASSA PERMITIDO';
+       
+       else 
+         v_retorno:= '';
+    end if;
+
+     
+   :p_4 :=	v_retorno;
+end;
